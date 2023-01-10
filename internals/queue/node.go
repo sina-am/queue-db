@@ -7,7 +7,7 @@ type Node struct {
 }
 
 func CreateNewNode(data interface{}) *Node {
-	n := new(Node)
-	n.data = data
-	return n
+	return &Node{
+		data: data,
+	}
 }

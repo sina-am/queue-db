@@ -36,3 +36,17 @@ func TestSearch(t *testing.T) {
 		}
 	}
 }
+func TestGetSize(t *testing.T) {
+	q := NewQueue()
+	if q.GetSize() != 0 {
+		t.Errorf("expected 0")
+	}
+	data_list := generateList()
+	for _, item := range data_list {
+		q.Enqueue(item)
+	}
+
+	if q.GetSize() != 4 {
+		t.Errorf("excepted 4")
+	}
+}
