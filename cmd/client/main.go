@@ -25,6 +25,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer conn.Close()
 
 	for {
 		fmt.Printf("[%s]:> ", *address)
@@ -35,19 +36,17 @@ func main() {
 			log.Fatal(err)
 		}
 		if bytes.Equal(cmdData, []byte("quit")) {
-			conn.Close()
 			break
 		}
-		cmd, err := command.DecodeCommand(cmdData)
+		cmd, err := command.DecodeMessage(cmdData)
 		if err != nil {
 			fmt.Printf("invalid command %s\n%s", cmdData, UsageMessage)
 			continue
 		}
 
-		response, err := conn.SendCommand(cmd)
+		response, err := conn.SendMessage(cmd)
 		if err != nil {
 			fmt.Print("Connection closed by peer\n")
-			conn.Close()
 			break
 		}
 		fmt.Printf("%s\n", response)

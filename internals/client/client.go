@@ -14,11 +14,11 @@ type ClientConnection interface {
 	net.Conn
 	Enqueue(queueName string, data []byte) ([]byte, error)
 	Dequeue(queueName string) ([]byte, error)
-	SendCommand(cmd command.Command) ([]byte, error)
+	SendMessage(cmd command.Message) ([]byte, error)
 }
 
-func (c clientConnection) SendCommand(cmd command.Command) ([]byte, error) {
-	_, err := c.Write(command.EncodeCommand(cmd))
+func (c clientConnection) SendMessage(cmd command.Message) ([]byte, error) {
+	_, err := c.Write(command.EncodeMessage(cmd))
 	if err != nil {
 		return nil, err
 	}
@@ -32,19 +32,19 @@ func (c clientConnection) SendCommand(cmd command.Command) ([]byte, error) {
 }
 
 func (c clientConnection) Dequeue(queueName string) ([]byte, error) {
-	cmd := command.Command{
-		Opration:  command.Dequeue,
+	cmd := command.Message{
+		Cmd:       command.Dequeue,
 		QueueName: queueName,
 	}
-	return c.SendCommand(cmd)
+	return c.SendMessage(cmd)
 }
 func (c clientConnection) Enqueue(queueName string, data []byte) ([]byte, error) {
-	cmd := command.Command{
-		Opration:  command.Enqueue,
+	cmd := command.Message{
+		Cmd:       command.Enqueue,
 		QueueName: queueName,
 		Data:      data,
 	}
-	return c.SendCommand(cmd)
+	return c.SendMessage(cmd)
 }
 
 func Dial(address string) (ClientConnection, error) {
