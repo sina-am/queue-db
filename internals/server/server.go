@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net"
 
@@ -62,9 +63,9 @@ func (s *TCPServer) handleConnection(conn net.Conn) {
 	}
 }
 
-func (s *TCPServer) handleCommand(conn net.Conn) error {
+func (s *TCPServer) handleCommand(buf io.ReadWriter) error {
 	rowMessage := make([]byte, 1024)
-	n, err := conn.Read(rowMessage)
+	n, err := buf.Read(rowMessage)
 	if err != nil {
 		return err
 	}
@@ -81,14 +82,14 @@ func (s *TCPServer) handleCommand(conn net.Conn) error {
 		if err != nil {
 			return err
 		}
-		_, err = conn.Write([]byte("ok"))
+		_, err = buf.Write([]byte("ok"))
 		return err
 	case command.Dequeue:
 		data, err := s.queues.Dequeue(msg.QueueName)
 		if err != nil {
 			return err
 		}
-		_, err = conn.Write(data)
+		_, err = buf.Write(data)
 		return err
 	default:
 		return command.ErrInvalidMessage
