@@ -11,15 +11,16 @@ import (
 )
 
 type TCPServerOps struct {
-	Addr string
+	Addr         string
+	MaxQueueSize int // Maximum memory for queues in byte
 }
 
 type TCPServer struct {
 	TCPServerOps
-	queues queue.QueueList
+	queues queue.QueueStorage
 }
 
-func NewTCPServer(ops TCPServerOps, queues queue.QueueList) *TCPServer {
+func NewTCPServer(ops TCPServerOps, queues queue.QueueStorage) *TCPServer {
 	return &TCPServer{
 		TCPServerOps: ops,
 		queues:       queues,
@@ -45,7 +46,9 @@ func (s *TCPServer) Run() error {
 }
 
 func (s *TCPServer) handleConnection(conn net.Conn) {
-	defer conn.Close()
+	defer func() {
+		conn.Close()
+	}()
 	for {
 		// TODO: better error handling
 		if err := s.handleCommand(conn); err != nil {
@@ -71,6 +74,9 @@ func (s *TCPServer) handleCommand(conn net.Conn) error {
 	}
 	switch msg.Cmd {
 	case command.Enqueue:
+		if s.queues.GetMemorySize() > s.MaxQueueSize {
+			return fmt.Errorf("memory reached the maximum size limit %d", s.MaxQueueSize)
+		}
 		err := s.queues.Enqueue(msg.QueueName, msg.Data)
 		if err != nil {
 			return err
@@ -85,6 +91,6 @@ func (s *TCPServer) handleCommand(conn net.Conn) error {
 		_, err = conn.Write(data)
 		return err
 	default:
-		return fmt.Errorf("invalid messsage command %s", err)
+		return command.ErrInvalidMessage
 	}
 }

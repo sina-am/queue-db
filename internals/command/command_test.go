@@ -3,6 +3,8 @@ package command
 import (
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestInvalidCmdMessage(t *testing.T) {
@@ -37,5 +39,41 @@ func TestRightMessage(t *testing.T) {
 
 	if string(command.Data) != data {
 		t.Error("invalid")
+	}
+}
+
+func TestEncodeMessage(t *testing.T) {
+	msg := Message{
+		Cmd:       Enqueue,
+		QueueName: "queue",
+		Data:      []byte("data"),
+	}
+
+	byteMsg := EncodeMessage(msg)
+	assert.Equal(t, byteMsg, []byte("enqueue queue data"))
+
+}
+
+func BenchmarkEncodeMessage(b *testing.B) {
+	msg := Message{
+		Cmd:       Enqueue,
+		QueueName: "queue",
+		Data:      []byte("data"),
+	}
+
+	for i := 0; i < b.N; i++ {
+		for i := 0; i < 100; i++ {
+			EncodeMessage(msg)
+		}
+	}
+}
+
+func BenchmarkDecodeMessage(b *testing.B) {
+	byteMsg := []byte(`enqueue queue {"user_id": "1"}`)
+
+	for i := 0; i < b.N; i++ {
+		for i := 0; i < 100; i++ {
+			DecodeMessage(byteMsg)
+		}
 	}
 }

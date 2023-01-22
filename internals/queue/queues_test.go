@@ -5,7 +5,7 @@ import (
 )
 
 func TestGetQueue(t *testing.T) {
-	q := NewmemoryQueueList()
+	q := NewmemoryQueueStorage()
 	_, err := q.GetQueue("test")
 	if err == nil {
 		t.Error("empty queue should return error")
@@ -19,7 +19,7 @@ func TestGetQueue(t *testing.T) {
 }
 
 func TestGetQueueOrCreate(t *testing.T) {
-	q := NewmemoryQueueList()
+	q := NewmemoryQueueStorage()
 	queue := q.GetQueueOrCreate("test")
 	if queue == nil {
 		t.Error("should create a queue")
@@ -37,7 +37,7 @@ func TestGetQueueOrCreate(t *testing.T) {
 }
 
 func TestCreateNewQueue(t *testing.T) {
-	q := NewmemoryQueueList()
+	q := NewmemoryQueueStorage()
 	_, err := q.CreateNewQueue("test")
 	if err != nil {
 		t.Error(err)
@@ -49,8 +49,8 @@ func TestCreateNewQueue(t *testing.T) {
 	}
 }
 
-func TestEnqueueQueueList(t *testing.T) {
-	q := NewmemoryQueueList()
+func TestEnqueueQueueStorage(t *testing.T) {
+	q := NewmemoryQueueStorage()
 	if err := q.Enqueue("test", []byte("data")); err != nil {
 		t.Error(err)
 	}
@@ -60,6 +60,38 @@ func TestEnqueueQueueList(t *testing.T) {
 		t.Error(err)
 	}
 }
+func BenchmarkGetOrCreate(b *testing.B) {
+	q := NewmemoryQueueStorage()
+	for i := 0; i < b.N; i++ {
+		for i := 0; i < 10; i++ {
+			q.GetQueueOrCreate("queue")
+		}
+	}
+}
 
-// func Dequeue(t *testing.T) {}
-// func GetSize(t *testing.T) {}
+func BenchmarkEnqueue(b *testing.B) {
+	q := NewmemoryQueueStorage()
+	data := []byte("data")
+
+	for i := 0; i < b.N; i++ {
+		for i := 0; i < 100; i++ {
+			q.Enqueue("queue1", data)
+		}
+	}
+}
+
+func BenchmarkDequeue(b *testing.B) {
+	// Initialazation
+	q := NewmemoryQueueStorage()
+	n := 100
+	data := []byte("data")
+	for i := 0; i < n; i++ {
+		q.Enqueue("queue1", data)
+	}
+	//
+	for i := 0; i < b.N; i++ {
+		for i := 0; i < n; i++ {
+			q.Dequeue("queue1")
+		}
+	}
+}
