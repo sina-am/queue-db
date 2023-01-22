@@ -5,7 +5,7 @@ import (
 )
 
 func TestGetQueue(t *testing.T) {
-	q := NewmemoryQueueStorage()
+	q := NewMemoryQueueStorage()
 	_, err := q.GetQueue("test")
 	if err == nil {
 		t.Error("empty queue should return error")
@@ -19,7 +19,7 @@ func TestGetQueue(t *testing.T) {
 }
 
 func TestGetQueueOrCreate(t *testing.T) {
-	q := NewmemoryQueueStorage()
+	q := NewMemoryQueueStorage()
 	queue := q.GetQueueOrCreate("test")
 	if queue == nil {
 		t.Error("should create a queue")
@@ -37,7 +37,7 @@ func TestGetQueueOrCreate(t *testing.T) {
 }
 
 func TestCreateNewQueue(t *testing.T) {
-	q := NewmemoryQueueStorage()
+	q := NewMemoryQueueStorage()
 	_, err := q.CreateNewQueue("test")
 	if err != nil {
 		t.Error(err)
@@ -50,7 +50,7 @@ func TestCreateNewQueue(t *testing.T) {
 }
 
 func TestEnqueueQueueStorage(t *testing.T) {
-	q := NewmemoryQueueStorage()
+	q := NewMemoryQueueStorage()
 	if err := q.Enqueue("test", []byte("data")); err != nil {
 		t.Error(err)
 	}
@@ -60,8 +60,9 @@ func TestEnqueueQueueStorage(t *testing.T) {
 		t.Error(err)
 	}
 }
+
 func BenchmarkGetOrCreate(b *testing.B) {
-	q := NewmemoryQueueStorage()
+	q := NewMemoryQueueStorage()
 	for i := 0; i < b.N; i++ {
 		for i := 0; i < 10; i++ {
 			q.GetQueueOrCreate("queue")
@@ -70,7 +71,7 @@ func BenchmarkGetOrCreate(b *testing.B) {
 }
 
 func BenchmarkEnqueueMemoryStorage(b *testing.B) {
-	q := NewmemoryQueueStorage()
+	q := NewMemoryQueueStorage()
 	data := []byte("data")
 
 	for i := 0; i < b.N; i++ {
@@ -82,7 +83,7 @@ func BenchmarkEnqueueMemoryStorage(b *testing.B) {
 
 func BenchmarkDequeueMemoryStorage(b *testing.B) {
 	// Initialazation
-	q := NewmemoryQueueStorage()
+	q := NewMemoryQueueStorage()
 	n := 100
 	data := []byte("data")
 	for i := 0; i < n; i++ {

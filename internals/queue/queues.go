@@ -3,6 +3,7 @@ package queue
 import (
 	"errors"
 	"fmt"
+	"sync"
 )
 
 var ErrorQueueIsEmpty = errors.New("empty queue")
@@ -20,16 +21,22 @@ type QueueStorage interface {
 
 type memoryQueueStorage struct {
 	queues     map[string]PriorityQueue
-	memorySize int
+	memorySize int // Used Memory
+	lock       sync.RWMutex
 }
 
-func NewmemoryQueueStorage() *memoryQueueStorage {
+func NewMemoryQueueStorage() *memoryQueueStorage {
 	return &memoryQueueStorage{
-		queues: map[string]PriorityQueue{},
+		queues:     map[string]PriorityQueue{},
+		memorySize: 0,
+		lock:       sync.RWMutex{},
 	}
 }
 
 func (q *memoryQueueStorage) GetQueue(name string) (PriorityQueue, error) {
+	q.lock.RLock()
+	defer q.lock.RUnlock()
+
 	if queue, found := q.queues[name]; found {
 		return queue, nil
 	}
@@ -49,6 +56,9 @@ func (q *memoryQueueStorage) GetQueueOrCreate(name string) PriorityQueue {
 }
 
 func (q *memoryQueueStorage) CreateNewQueue(name string) (PriorityQueue, error) {
+	q.lock.Lock()
+	defer q.lock.Unlock()
+
 	if _, found := q.queues[name]; found {
 		return nil, fmt.Errorf("queue %s already exits", name)
 	}
@@ -136,7 +146,7 @@ func (q *memoryQueueStorage) GetMemorySize() int {
 // }
 
 // func NewPersistentQueueStorage(filePath string) (*persistentQueueStorage, error) {
-// 	memStorage := NewmemoryQueueStorage()
+// 	memStorage := NewMemoryQueueStorage()
 // 	exist, err := fileExists(filePath)
 // 	if err != nil {
 // 		return nil, err

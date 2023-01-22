@@ -15,7 +15,7 @@ func main() {
 	)
 	flag.Parse()
 
-	queues := queue.NewmemoryQueueStorage()
+	queues := queue.NewMemoryQueueStorage()
 
 	ops := server.TCPServerOps{
 		Addr:         *address,
