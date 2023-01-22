@@ -69,7 +69,7 @@ func BenchmarkGetOrCreate(b *testing.B) {
 	}
 }
 
-func BenchmarkEnqueue(b *testing.B) {
+func BenchmarkEnqueueMemoryStorage(b *testing.B) {
 	q := NewmemoryQueueStorage()
 	data := []byte("data")
 
@@ -80,7 +80,7 @@ func BenchmarkEnqueue(b *testing.B) {
 	}
 }
 
-func BenchmarkDequeue(b *testing.B) {
+func BenchmarkDequeueMemoryStorage(b *testing.B) {
 	// Initialazation
 	q := NewmemoryQueueStorage()
 	n := 100
@@ -95,3 +95,50 @@ func BenchmarkDequeue(b *testing.B) {
 		}
 	}
 }
+
+// func TestPersistentGetQueue(t *testing.T) {
+// 	defer func() { os.Remove("./test") }()
+// 	q, err := NewPersistentQueueStorage("./test")
+// 	assert.Nil(t, err)
+
+// 	_, err = q.GetQueue("test")
+// 	assert.NotNil(t, err)
+
+// 	q.Enqueue("test", []byte("data"))
+// 	_, err = q.GetQueue("test")
+// 	assert.Nil(t, err)
+// }
+
+// func TestPersistentEnqueue(t *testing.T) {
+// 	defer func() { os.Remove("./test") }()
+// 	q, err := NewPersistentQueueStorage("./test")
+// 	assert.Nil(t, err)
+
+// 	err = q.Enqueue("test", []byte("data"))
+// 	assert.Nil(t, err)
+
+// 	_, err = q.Dequeue("test")
+// 	assert.Nil(t, err)
+// }
+
+// func TestLoadFromMemory(t *testing.T) {
+// 	defer func() { os.Remove("./test") }()
+// 	q, err := NewPersistentQueueStorage("./test")
+// 	assert.Nil(t, err)
+
+// 	for i := 0; i < 10; i++ {
+// 		err = q.Enqueue("test", []byte("data"))
+// 		assert.Nil(t, err)
+// 	}
+// 	for i := 0; i < 4; i++ {
+// 		_, err = q.Dequeue("test")
+// 		assert.Nil(t, err)
+// 	}
+// 	q.walFd.Close()
+
+// 	q, err = NewPersistentQueueStorage("./test")
+// 	assert.Nil(t, err)
+// 	data, err := q.Dequeue("test")
+// 	assert.Nil(t, err)
+// 	assert.Equal(t, data, []byte("data"))
+// }

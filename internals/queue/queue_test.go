@@ -1,11 +1,17 @@
 package queue
 
 import (
+	"bytes"
 	"testing"
 )
 
-func generateList() []string {
-	return []string{"1", "2", "3", "4"}
+func generateList() [][]byte {
+	return [][]byte{
+		[]byte("1"),
+		[]byte("2"),
+		[]byte("3"),
+		[]byte("4"),
+	}
 }
 
 func TestEnqueue(t *testing.T) {
@@ -17,7 +23,7 @@ func TestEnqueue(t *testing.T) {
 
 	for i, item := range data_list {
 		data := q.Dequeue()
-		if data != data_list[i] {
+		if !bytes.Equal(data, data_list[i]) {
 			t.Errorf("Expected %s, got %s", item, data)
 		}
 	}
@@ -48,5 +54,16 @@ func TestGetSize(t *testing.T) {
 
 	if q.GetSize() != 4 {
 		t.Errorf("excepted 4")
+	}
+}
+
+func BenchmarkEnqueue(b *testing.B) {
+	q := NewQueue()
+	data := []byte("data")
+
+	for i := 0; i < b.N; i++ {
+		for i := 0; i < 100; i++ {
+			q.Enqueue(data)
+		}
 	}
 }

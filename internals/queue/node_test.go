@@ -5,9 +5,9 @@ import (
 )
 
 func TestCreateNewNode(t *testing.T) {
-	data := "node1"
-	firstNode := CreateNewNode(data)
-	if firstNode.data != data {
+	data := []byte("node1")
+	firstNode := NewNode(data)
+	if !firstNode.Contains(data) {
 		t.Errorf("Expected %s got %s", data, firstNode.data)
 	}
 }

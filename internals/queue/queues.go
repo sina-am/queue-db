@@ -71,11 +71,9 @@ func (q *memoryQueueStorage) Dequeue(queueName string) ([]byte, error) {
 	if queue.IsEmpty() {
 		return nil, ErrorQueueIsEmpty
 	}
-	if data, ok := queue.Dequeue().([]byte); ok {
-		q.memorySize -= len(data)
-		return data, nil
-	}
-	return nil, errors.New("can't")
+	data := queue.Dequeue()
+	q.memorySize -= len(data)
+	return data, nil
 }
 
 func (q *memoryQueueStorage) GetQueueSize(queueName string) int {
@@ -89,3 +87,123 @@ func (q *memoryQueueStorage) GetQueueSize(queueName string) int {
 func (q *memoryQueueStorage) GetMemorySize() int {
 	return q.memorySize
 }
+
+// type persistentQueueStorage struct {
+// 	walFd      *os.File // Write ahead log
+// 	memStorage *memoryQueueStorage
+// }
+
+// func fileExists(filePath string) (bool, error) {
+// 	info, err := os.Stat(filePath)
+// 	if err == nil {
+// 		return !info.IsDir(), nil
+// 	}
+// 	if errors.Is(err, os.ErrNotExist) {
+// 		return false, nil
+// 	}
+// 	return false, err
+// }
+
+// func readIntoMemory(filePath string, memStorage *memoryQueueStorage) error {
+// 	fd, err := os.Open(filePath)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer fd.Close()
+
+// 	fileScanner := bufio.NewScanner(fd)
+// 	fileScanner.Split(bufio.ScanLines)
+
+// 	for fileScanner.Scan() {
+// 		msg, err := command.DecodeMessage(fileScanner.Bytes())
+// 		if err != nil {
+// 			return err
+// 		}
+// 		switch msg.Cmd {
+// 		case command.Enqueue:
+// 			err = memStorage.Enqueue(msg.QueueName, msg.Data)
+// 			if err != nil {
+// 				return err
+// 			}
+// 		case command.Dequeue:
+// 			_, err = memStorage.Dequeue(msg.QueueName)
+// 			if err != nil {
+// 				return err
+// 			}
+// 		}
+// 	}
+// 	return nil
+// }
+
+// func NewPersistentQueueStorage(filePath string) (*persistentQueueStorage, error) {
+// 	memStorage := NewmemoryQueueStorage()
+// 	exist, err := fileExists(filePath)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	// Read from wal
+// 	if exist {
+// 		if err := readIntoMemory(filePath, memStorage); err != nil {
+// 			return nil, err
+// 		}
+// 	}
+
+// 	fd, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModePerm)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return &persistentQueueStorage{
+// 		walFd:      fd,
+// 		memStorage: memStorage,
+// 	}, nil
+// }
+
+// func (q *persistentQueueStorage) GetQueue(name string) (PriorityQueue, error) {
+// 	return q.memStorage.GetQueue(name)
+// }
+
+// func (q *persistentQueueStorage) GetQueueOrCreate(name string) PriorityQueue {
+// 	return q.memStorage.GetQueueOrCreate(name)
+// }
+
+// func (q *persistentQueueStorage) CreateNewQueue(name string) (PriorityQueue, error) {
+// 	return q.memStorage.CreateNewQueue(name)
+// }
+
+// func (q *persistentQueueStorage) Enqueue(queueName string, data []byte) error {
+// 	byteMsg := command.EncodeMessage(
+// 		command.Message{
+// 			Cmd:       command.Enqueue,
+// 			QueueName: queueName,
+// 			Data:      data,
+// 		},
+// 	)
+// 	_, err := q.walFd.Write(byteMsg)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return q.memStorage.Enqueue(queueName, data)
+// }
+
+// func (q *persistentQueueStorage) Dequeue(queueName string) ([]byte, error) {
+// 	byteMsg := command.EncodeMessage(
+// 		command.Message{
+// 			Cmd:       command.Dequeue,
+// 			QueueName: queueName,
+// 		},
+// 	)
+// 	_, err := q.walFd.Write(byteMsg)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return q.memStorage.Dequeue(queueName)
+// }
+
+// func (q *persistentQueueStorage) GetQueueSize(queueName string) int {
+// 	return q.memStorage.GetQueueSize(queueName)
+// }
+
+// func (q *persistentQueueStorage) GetMemorySize() int {
+// 	return q.memStorage.GetMemorySize()
+// }

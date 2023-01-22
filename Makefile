@@ -2,6 +2,9 @@ all: build
 
 build: build-client build-server
 
+test: 
+	go test ./...
+
 build-server:
 	go build -o bin/queue-server ./cmd/server
 

@@ -1,9 +1,9 @@
 package queue
 
 type PriorityQueue interface {
-	Enqueue(data interface{})
-	Dequeue() interface{}
-	Search(data interface{}) bool
+	Enqueue(data NodeData)
+	Dequeue() NodeData
+	Search(data NodeData) bool
 	IsEmpty() bool
 	GetSize() int
 }
@@ -14,9 +14,13 @@ type queue struct {
 }
 
 func NewQueue() *queue {
-	q := new(queue)
-	q.head = CreateNewNode(nil)
-	q.tail = q.head
+	q := &queue{
+		size: 0,
+	}
+
+	firstNode := NewNode(nil)
+	q.head = firstNode
+	q.tail = firstNode
 	return q
 }
 
@@ -24,16 +28,16 @@ func (q *queue) IsEmpty() bool {
 	return q.head.data == nil
 }
 
-func (q *queue) Enqueue(data interface{}) {
+func (q *queue) Enqueue(data NodeData) {
 	q.tail.data = data
-	new_tail := CreateNewNode(nil)
+	new_tail := NewNode(nil)
 	new_tail.next = q.tail
 	q.tail.prev = new_tail
 	q.tail = new_tail
 	q.size++
 }
 
-func (q *queue) Dequeue() interface{} {
+func (q *queue) Dequeue() NodeData {
 	if q.IsEmpty() {
 		return nil
 	}
@@ -44,9 +48,9 @@ func (q *queue) Dequeue() interface{} {
 	return data
 }
 
-func (q *queue) Search(data interface{}) bool {
+func (q *queue) Search(data NodeData) bool {
 	for cur := q.head; cur != nil; cur = cur.prev {
-		if cur.data == data {
+		if cur.Contains(data) {
 			return true
 		}
 	}
